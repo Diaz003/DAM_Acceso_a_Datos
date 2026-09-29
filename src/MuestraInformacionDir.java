@@ -1,6 +1,12 @@
-// Importamos la clase File del paquete java.io.
-// File nos permite trabajar con rutas de ficheros y directorios.
-import java.io.File;
+// Importamos Path y Files del paquete java.nio.file.
+//
+// Path representa una ruta de un fichero o directorio.
+// Files contiene métodos para trabajar con esas rutas.
+import java.nio.file.Path;
+import java.nio.file.Files;
+
+import java.io.IOException;
+import java.util.stream.Stream;
 
 public class MuestraInformacionDir {
 
@@ -11,7 +17,8 @@ public class MuestraInformacionDir {
         // Si hemos pasado algún argumento, utilizamos args[0] como ruta.
         // Si no hemos pasado ninguno, utilizamos ".".
         //
-        // "." representa el directorio actual desde el que se ejecuta el programa.
+        // "." representa el directorio actual desde el que se ejecuta
+        // el programa.
         //
         // Es equivalente a:
         //
@@ -23,20 +30,23 @@ public class MuestraInformacionDir {
         String ruta = (args.length > 0) ? args[0] : ".";
 
 
-        // Creamos un objeto File que representa la ruta indicada.
+        // Creamos un objeto Path que representa la ruta indicada.
         //
         // IMPORTANTE:
-        // Crear un objeto File NO significa que el fichero exista.
+        // Crear un objeto Path NO significa que el fichero exista.
         // Simplemente estamos creando un objeto Java que representa esa ruta.
-        File fich = new File(ruta);
+        Path fich = Path.of(ruta);
 
 
         // Comprobamos si la ruta existe realmente en el sistema.
-        if (!fich.exists()) {
+        //
+        // A diferencia de File, donde hacíamos:
+        //
+        // fich.exists()
+        //
+        // ahora utilizamos el método estático Files.exists().
+        if (!Files.exists(fich)) {
 
-            // Si no existe, mostramos un mensaje.
-            //
-            // %s será sustituido por el contenido de la variable ruta.
             System.out.printf(
                 "No existe el fichero o directorio (%s).",
                 ruta
@@ -50,8 +60,8 @@ public class MuestraInformacionDir {
 
         // Si hemos llegado hasta aquí sabemos que la ruta existe.
         //
-        // Ahora comprobamos si corresponde a un FICHERO.
-        if (fich.isFile()) {
+        // Comprobamos si corresponde a un FICHERO.
+        if (Files.isRegularFile(fich)) {
 
             System.out.printf(
                 "%s es un fichero.\n",
@@ -60,58 +70,75 @@ public class MuestraInformacionDir {
 
 
         // Si no es un fichero, comprobamos si es un DIRECTORIO.
-        } else if (fich.isDirectory()) {
+        } else if (Files.isDirectory(fich)) {
 
             System.out.printf(
-                "%s es un directorio. Contenidos: \n",
+                "%s es un directorio. Contenidos:\n",
                 ruta
             );
 
 
-            // listFiles() obtiene el contenido del directorio.
+            // Files.list() obtiene los elementos que se encuentran
+            // directamente dentro del directorio.
             //
-            // Devuelve un array de objetos File.
-            // Cada objeto File representa uno de los elementos
-            // que hay dentro del directorio.
+            // Devuelve un Stream<Path>.
             //
-            // Esos elementos pueden ser tanto:
+            // Cada Path representa uno de los elementos del directorio.
+            //
+            // Esos elementos pueden ser:
             // - ficheros
             // - directorios
-            File[] ficheros = fich.listFiles();
-
-
-            // Recorremos todos los elementos del array.
             //
-            // Es un bucle for-each:
-            // en cada vuelta, "f" representa uno de los
-            // ficheros o directorios encontrados.
-            for (File f : ficheros) {
+            // Files.list() puede producir una IOException, por eso
+            // utilizamos un bloque try-catch.
+            //
+            // Además utilizamos try-with-resources para que el Stream
+            // se cierre automáticamente cuando terminemos de utilizarlo.
+            try (Stream<Path> ficheros = Files.list(fich)) {
 
 
-                // getName() devuelve únicamente el nombre
-                // del fichero o directorio.
+                // Recorremos todos los elementos del Stream.
                 //
-                // Por ejemplo:
-                // /usuarios/ana/documentos/apuntes.pdf
-                //
-                // getName() devolvería:
-                // apuntes.pdf
-                System.out.print(f.getName());
+                // En cada iteración, "f" representa uno de los
+                // ficheros o directorios encontrados.
+                ficheros.forEach(f -> {
 
 
-                // Comprobamos si el elemento actual es un directorio.
-                if (f.isDirectory()) {
+                    // getFileName() devuelve únicamente el nombre
+                    // del fichero o directorio.
+                    //
+                    // Por ejemplo:
+                    //
+                    // /usuarios/ana/documentos/apuntes.pdf
+                    //
+                    // getFileName() devolvería:
+                    //
+                    // apuntes.pdf
+                    System.out.print(f.getFileName());
 
-                    // Si es un directorio añadimos "/"
-                    // para poder distinguir visualmente los directorios
-                    // de los ficheros.
-                    System.out.print("/");
-                }
+
+                    // Comprobamos si el elemento actual es un directorio.
+                    if (Files.isDirectory(f)) {
+
+                        // Si es un directorio añadimos "/"
+                        // para distinguir visualmente los directorios
+                        // de los ficheros.
+                        System.out.print("/");
+                    }
 
 
-                // Hacemos un salto de línea para que el siguiente
-                // elemento aparezca en una línea diferente.
-                System.out.println();
+                    // Hacemos un salto de línea para que el siguiente
+                    // elemento aparezca en una línea diferente.
+                    System.out.println();
+                });
+
+            } catch (IOException e) {
+
+                // Si se produce un error al intentar acceder
+                // al contenido del directorio, mostramos el mensaje.
+                System.out.println(
+                    "Error al acceder al directorio: " + e.getMessage()
+                );
             }
         }
     }
