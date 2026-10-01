@@ -1,2 +1,5 @@
 bin/
+out/
 *.class
+target/
+.DS_Store
