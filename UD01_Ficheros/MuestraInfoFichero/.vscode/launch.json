@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Ejecutar MuestraInformacionDir",
+            "request": "launch",
+            "mainClass": "MuestraInformacionDir",
+            "args": ["/Users/ana"],
+            "cwd": "${workspaceFolder}/src"
+        }
+    ]
+}
