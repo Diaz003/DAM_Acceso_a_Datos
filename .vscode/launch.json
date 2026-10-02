@@ -6,7 +6,7 @@
             "name": "Ejecutar MuestraInformacionDir",
             "request": "launch",
             "mainClass": "MuestraInformacionDir",
-            "args": ["/Users/ana"],
+            "args": ["."],
             "cwd": "${workspaceFolder}/src"
         }
     ]
